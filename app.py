@@ -43,6 +43,8 @@ if "start_time" not in st.session_state:
     st.session_state.start_time = time.time()
 if "show_feedback" not in st.session_state:
     st.session_state.show_feedback = False
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
 
 # --------------------
 # Topic Pool
@@ -63,6 +65,7 @@ if openai_api_key:
         st.session_state.score = 0
         st.session_state.start_time = time.time()
         st.session_state.show_feedback = False
+        st.session_state.submitted = False
         with st.spinner("Generating content..."):
             for i in range(5):
                 prompt = f"""
@@ -116,6 +119,7 @@ if st.session_state.generated_sets:
     st.subheader(f"📘 Passage {st.session_state.current_index + 1}")
     st.markdown(current["passage"])
 
+    user_answers = []
     for i, q in enumerate(current["questions"]):
         st.write(f"**Q{i+1} ({q['skill']}):** {q['question']}")
         user_answer = st.radio(
@@ -123,8 +127,32 @@ if st.session_state.generated_sets:
             q["options"],
             key=f"answer_{st.session_state.current_index}_{i}"
         )
+        user_answers.append(user_answer)
 
-    # Optional: Add navigation button
-    if st.session_state.current_index < len(st.session_state.generated_sets) - 1:
-        if st.button("➡️ Next Passage"):
-            st.session_state.current_index += 1
+    if st.button("✅ Submit Answers"):
+        st.session_state.submitted = True
+        score = 0
+        feedback = []
+        for i, q in enumerate(current["questions"]):
+            correct = q["answer"]
+            user = user_answers[i]
+            if user == correct:
+                score += 1
+                feedback.append(f"✅ Q{i+1} correct")
+            else:
+                feedback.append(f"❌ Q{i+1} incorrect. Correct: {correct}")
+        st.session_state.score += score
+        st.session_state.answers.append({
+            "passage": st.session_state.current_index + 1,
+            "score": score,
+            "feedback": feedback
+        })
+
+    if st.session_state.submitted:
+        st.markdown("### 🔍 Feedback")
+        for f in st.session_state.answers[-1]["feedback"]:
+            st.write(f)
+        if st.session_state.current_index < len(st.session_state.generated_sets) - 1:
+            if st.button("➡️ Next Passage"):
+                st.session_state.current_index += 1
+                st.session_state.submitted = False
