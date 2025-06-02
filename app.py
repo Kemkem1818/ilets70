@@ -63,7 +63,6 @@ if openai_api_key:
         st.session_state.score = 0
         st.session_state.start_time = time.time()
         st.session_state.show_feedback = False
-        st.write(f"Total sets generated: {len(st.session_state.generated_sets)}")
         with st.spinner("Generating content..."):
             for i in range(5):
                 prompt = f"""
@@ -110,6 +109,22 @@ Questions:
                     st.write(f"✅ Added passage {i+1} with {len(questions)} questions")
 
 # --------------------
-# Display One Set at a Time
-# (The rest of the code remains unchanged)
+# Display the current passage and questions
+if st.session_state.generated_sets:
+    current = st.session_state.generated_sets[st.session_state.current_index]
 
+    st.subheader(f"📘 Passage {st.session_state.current_index + 1}")
+    st.markdown(current["passage"])
+
+    for i, q in enumerate(current["questions"]):
+        st.write(f"**Q{i+1} ({q['skill']}):** {q['question']}")
+        user_answer = st.radio(
+            f"Your answer for Q{i+1}",
+            q["options"],
+            key=f"answer_{st.session_state.current_index}_{i}"
+        )
+
+    # Optional: Add navigation button
+    if st.session_state.current_index < len(st.session_state.generated_sets) - 1:
+        if st.button("➡️ Next Passage"):
+            st.session_state.current_index += 1
