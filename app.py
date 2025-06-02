@@ -129,24 +129,25 @@ if st.session_state.generated_sets:
         )
         user_answers.append(user_answer)
 
-    if st.button("✅ Submit Answers"):
-        st.session_state.submitted = True
-        score = 0
-        feedback = []
-        for i, q in enumerate(current["questions"]):
-            correct = q["answer"]
-            user = user_answers[i]
-            if user == correct:
-                score += 1
-                feedback.append(f"✅ Q{i+1} correct")
-            else:
-                feedback.append(f"❌ Q{i+1} incorrect. Correct: {correct}")
-        st.session_state.score += score
-        st.session_state.answers.append({
-            "passage": st.session_state.current_index + 1,
-            "score": score,
-            "feedback": feedback
-        })
+    if not st.session_state.submitted:
+        if st.button("✅ Submit Answers"):
+            st.session_state.submitted = True
+            score = 0
+            feedback = []
+            for i, q in enumerate(current["questions"]):
+                correct = q["answer"]
+                user = user_answers[i]
+                if user == correct:
+                    score += 1
+                    feedback.append(f"✅ Q{i+1} correct")
+                else:
+                    feedback.append(f"❌ Q{i+1} incorrect. Correct: {correct}")
+            st.session_state.score += score
+            st.session_state.answers.append({
+                "passage": st.session_state.current_index + 1,
+                "score": score,
+                "feedback": feedback
+            })
 
     if st.session_state.submitted:
         st.markdown("### 🔍 Feedback")
@@ -156,3 +157,6 @@ if st.session_state.generated_sets:
             if st.button("➡️ Next Passage"):
                 st.session_state.current_index += 1
                 st.session_state.submitted = False
+        else:
+            st.markdown("---")
+            st.success("🎉 You've completed all passages! Great job, Ha Chi!")
