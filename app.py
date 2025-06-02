@@ -160,3 +160,21 @@ if st.session_state.generated_sets:
         else:
             st.markdown("---")
             st.success("🎉 You've completed all passages! Great job, Ha Chi!")
+
+            # Show total score and estimated IELTS band
+            total_questions = len(st.session_state.generated_sets) * 3
+            final_score = st.session_state.score
+            percentage = (final_score / total_questions) * 100
+            if percentage >= 90:
+                band = "8.0+"
+            elif percentage >= 80:
+                band = "7.5"
+            elif percentage >= 70:
+                band = "7.0"
+            elif percentage >= 60:
+                band = "6.5"
+            else:
+                band = "6.0 or below"
+
+            st.markdown(f"### 🧮 Total Score: {final_score}/{total_questions}  ")
+            st.markdown(f"### 🎯 Estimated IELTS Band: **{band}**")
